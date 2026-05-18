@@ -8,7 +8,7 @@ void sortArray(int arr[], int size)
     int min = i;
     for (int j = i + 1; j < size; j++)
     {
-      if (arr[j] < arr[min])
+      if (arr[j] > arr[min])
       {
         min = j;
       }
