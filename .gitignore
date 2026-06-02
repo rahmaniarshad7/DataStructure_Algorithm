@@ -29,3 +29,5 @@ SelectionSort.exe
 BinarySearch.exe
 first_Last_Occurrance.exe
 OrderNotKnown.exe
+CountOfElement.exe
+CountRotation.exe
