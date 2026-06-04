@@ -37,7 +37,6 @@ int getMinimum(vector<int> &arr)
       end = mid - 1;
     }
   }
-  return min;
 }
 
 int main()
