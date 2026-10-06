@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kadane's Algorithm — Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f14;
+    --card:#141823;
+    --card-alt:#1a1f2c;
+    --border:#262c3b;
+    --text:#e8eaf0;
+    --muted:#8b92a5;
+    --amber:#ffb454;
+    --teal:#5eead4;
+    --red:#ff7b7b;
+    --green:#7ee787;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.65;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px;}
+
+  /* HEADER */
+  header{
+    padding:64px 20px 40px;
+    border-bottom:1px solid var(--border);
+    background:
+      radial-gradient(ellipse at top left, rgba(255,180,84,0.08), transparent 50%),
+      radial-gradient(ellipse at top right, rgba(94,234,212,0.06), transparent 50%);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--amber);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(32px,5vw,46px);
+    margin:10px 0 6px;
+    font-weight:700;
+  }
+  .sub{color:var(--muted);font-size:17px;max-width:560px;}
+
+  /* SECTIONS */
+  section{padding:44px 0;border-bottom:1px solid var(--border);}
+  section:last-of-type{border-bottom:none;}
+  h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:24px;
+    margin:0 0 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  h2 .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    border:1px solid var(--border);
+    padding:3px 8px;
+    border-radius:20px;
+    font-weight:500;
+  }
+  p{color:#cdd2de;}
+  .muted{color:var(--muted);}
+  strong{color:var(--text);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px 24px;
+    margin:16px 0;
+  }
+  .analogy{
+    background:linear-gradient(135deg, rgba(255,180,84,0.07), rgba(94,234,212,0.04));
+    border:1px solid rgba(255,180,84,0.25);
+  }
+  .analogy .label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--amber);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+  }
+
+  pre{
+    background:#0a0c11;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13.5px;
+    line-height:1.7;
+    color:#d6dae3;
+  }
+  code{font-family:'JetBrains Mono',monospace;font-size:0.92em;color:var(--teal);}
+  pre code{color:inherit;}
+  .comment{color:#6b7280;}
+  .kw{color:#ff7b7b;}
+  .fn{color:#79c0ff;}
+  .num{color:#ffb454;}
+
+  /* GOLDEN RULES */
+  .rules{display:grid;gap:14px;}
+  .rule{
+    background:var(--card-alt);
+    border:1px solid var(--border);
+    border-left:3px solid var(--teal);
+    border-radius:8px;
+    padding:16px 18px;
+  }
+  .rule .num-badge{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--teal);
+    font-size:13px;
+    margin-bottom:4px;
+    display:block;
+  }
+
+  /* VISUALIZER */
+  .viz{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    margin:18px 0;
+  }
+  .array-row{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin:18px 0;
+  }
+  .box{
+    width:48px;height:48px;
+    border:1.5px solid var(--border);
+    border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+    color:var(--muted);
+    background:#0f1219;
+    transition:all .25s ease;
+    position:relative;
+  }
+  .box.future{opacity:0.35;}
+  .box.in-window{
+    border-color:var(--amber);
+    background:rgba(255,180,84,0.12);
+    color:var(--amber);
+  }
+  .box.best-window{
+    border-color:var(--teal);
+    background:rgba(94,234,212,0.14);
+    color:var(--teal);
+    box-shadow:0 0 0 1px rgba(94,234,212,0.3);
+  }
+  .box.idx{
+    position:absolute;
+    top:-20px;
+    font-size:10px;
+    color:#5b6072;
+  }
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin:18px 0;
+  }
+  .stat{
+    background:var(--card-alt);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .stat .l{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;}
+  .stat .v{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:2px;}
+  .stat.curr .v{color:var(--amber);}
+  .stat.best .v{color:var(--teal);}
+
+  .log{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:#aeb4c2;
+    min-height:38px;
+    padding-top:8px;
+    border-top:1px dashed var(--border);
+  }
+  .controls{display:flex;gap:10px;margin-top:16px;}
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:10px 18px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--card-alt);
+    color:var(--text);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  button:hover{border-color:var(--amber);color:var(--amber);}
+  button:disabled{opacity:0.35;cursor:not-allowed;}
+  button.primary{background:var(--amber);color:#1a1206;border-color:var(--amber);}
+  button.primary:hover{filter:brightness(1.08);color:#1a1206;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+  th,td{
+    padding:9px 10px;
+    text-align:center;
+    border:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;
+  }
+  th{background:var(--card-alt);color:var(--muted);font-weight:500;}
+
+  /* VARIATIONS */
+  .vcard{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    margin:14px 0;
+  }
+  .vcard .vh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .vcard h3{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;
+    margin:0;
+  }
+  .vcard .src{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .vcard .twist{
+    font-size:13px;
+    color:var(--amber);
+    margin:6px 0 8px;
+    font-weight:600;
+  }
+
+  /* RECOGNITION LIST */
+  .recog{display:grid;gap:10px;}
+  .recog li{
+    list-style:none;
+    background:var(--card-alt);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:14.5px;
+  }
+  .recog li::before{content:"→  ";color:var(--teal);font-weight:700;}
+  .recog ul{padding:0;margin:0;display:grid;gap:10px;}
+
+  .mistake{
+    border-left:3px solid var(--red);
+    background:var(--card-alt);
+    border-radius:8px;
+    padding:12px 16px;
+    margin:10px 0;
+    font-size:14.5px;
+  }
+  .mistake b{color:var(--red);}
+
+  footer{
+    padding:36px 20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  ul.plain{padding-left:20px;}
+  ul.plain li{margin:6px 0;color:#cdd2de;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">DSA Notes · Arrays</div>
+    <h1>Kadane's Algorithm</h1>
+    <p class="sub">Finding the maximum sum contiguous subarray — in plain English, with a live walkthrough and every question variation you'll actually see.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- PROBLEM -->
+  <section>
+    <h2>The Problem <span class="tag">Maximum Subarray Sum</span></h2>
+    <p>You're given an array of integers — it can have both positive and negative numbers. You need to find a <strong>contiguous</strong> part of the array (a subarray — no skipping elements) whose sum is the largest possible.</p>
+    <div class="card">
+      <code>nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]</code><br><br>
+      <span class="muted">Best subarray:</span> <code>[4, -1, 2, 1]</code> &nbsp;→&nbsp; <span class="muted">Sum =</span> <code>6</code>
+    </div>
+    <p class="muted">Note the word <strong>contiguous</strong> — elements must be next to each other. You can't pick and choose randomly from anywhere in the array. That's a different problem (subsequence).</p>
+  </section>
+
+  <!-- ANALOGY -->
+  <section>
+    <h2>Think Of It Like This</h2>
+    <div class="card analogy">
+      <div class="label">Real-life analogy</div>
+      <p style="margin:0;">You're a Zomato delivery partner. Each day you note your <strong>net earning</strong> — some days it's profit, some days it's a loss (fuel cost more than what you earned). You want to find the best <strong>continuous streak of days</strong> where your total profit was the highest.</p>
+      <p style="margin:8px 0 0;">Every day you ask one question: <em>"Should I continue my current streak, or is today bad enough that I should just start a fresh streak from today?"</em> That one question — asked at every single day — is the entire algorithm.</p>
+    </div>
+  </section>
+
+  <!-- BRUTE FORCE -->
+  <section>
+    <h2>Why Not Just Brute Force? <span class="tag">O(n²)</span></h2>
+    <p>The obvious way: try <strong>every</strong> possible subarray, sum it up, and keep the maximum.</p>
+    <pre><span class="kw">int</span> maxSubArrayBrute(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {
+    <span class="kw">int</span> n = nums.size(), best = INT_MIN;
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="kw">int</span> sum = <span class="num">0</span>;
+        <span class="kw">for</span> (<span class="kw">int</span> j = i; j &lt; n; j++) {
+            sum += nums[j];
+            best = max(best, sum);
+        }
+    }
+    <span class="kw">return</span> best;
+}</pre>
+    <p>This works, but it's <code>O(n²)</code> — for every starting point <code>i</code>, you re-scan forward. Kadane's algorithm does the same job in a <strong>single pass</strong>, <code>O(n)</code>, by being smart about reusing the previous sum instead of recomputing it.</p>
+  </section>
+
+  <!-- GOLDEN RULES -->
+  <section>
+    <h2>The Two Golden Rules</h2>
+    <div class="rules">
+      <div class="rule">
+        <span class="num-badge">RULE 1 — currSum (your "today's mood")</span>
+        At every index, decide: extend the previous streak, or restart fresh from here? Just take whichever is bigger:
+        <pre style="margin-top:10px;"><span class="fn">currSum</span> = max(nums[i], currSum + nums[i]);</pre>
+        If <code>currSum</code> already became negative, adding it only drags you down — so it's better to drop it and restart from the current element.
+      </div>
+      <div class="rule">
+        <span class="num-badge">RULE 2 — maxSum (your "personal best ever")</span>
+        The best streak might have already ended a few days back. So separately, keep a variable that just remembers the highest <code>currSum</code> you've ever seen:
+        <pre style="margin-top:10px;"><span class="fn">maxSum</span> = max(maxSum, currSum);</pre>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px;">That's it. Two variables, one loop, one comparison each. <code>currSum</code> can go up and down — <code>maxSum</code> only ever goes up.</p>
+  </section>
+
+  <!-- VISUALIZER -->
+  <section>
+    <h2>Watch It Run <span class="tag">step-by-step</span></h2>
+    <p>Click <strong>Next Step</strong> to walk through the algorithm on <code>[-2, 1, -3, 4, -1, 2, 1, -5, 4]</code>. Amber = current window being tracked. Teal = best window found so far.</p>
+
+    <div class="viz">
+      <div class="array-row" id="arrayRow"></div>
+
+      <div class="stats">
+        <div class="stat curr"><div class="l">currSum (today's mood)</div><div class="v" id="currSumVal">–</div></div>
+        <div class="stat best"><div class="l">maxSum (personal best)</div><div class="v" id="maxSumVal">–</div></div>
+      </div>
+
+      <div class="log" id="logText">Click "Next Step" to begin.</div>
+
+      <div class="controls">
+        <button class="primary" id="nextBtn">Next Step →</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRY RUN TABLE -->
+  <section>
+    <h2>Same Example — Quick Reference Table</h2>
+    <table>
+      <tr><th>i</th><th>nums[i]</th><th>currSum</th><th>maxSum</th></tr>
+      <tr><td>0</td><td>-2</td><td>-2</td><td>-2</td></tr>
+      <tr><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+      <tr><td>2</td><td>-3</td><td>-2</td><td>1</td></tr>
+      <tr><td>3</td><td>4</td><td>4</td><td>4</td></tr>
+      <tr><td>4</td><td>-1</td><td>3</td><td>4</td></tr>
+      <tr><td>5</td><td>2</td><td>5</td><td>5</td></tr>
+      <tr><td>6</td><td>1</td><td>6</td><td><strong style="color:var(--teal);">6</strong></td></tr>
+      <tr><td>7</td><td>-5</td><td>1</td><td>6</td></tr>
+      <tr><td>8</td><td>4</td><td>5</td><td>6</td></tr>
+    </table>
+    <p class="muted">Answer: <code>maxSum = 6</code>, achieved by subarray <code>[4, -1, 2, 1]</code> (indices 3–6).</p>
+  </section>
+
+  <!-- FULL CODE -->
+  <section>
+    <h2>Full C++ Code <span class="tag">O(n) time, O(1) space</span></h2>
+    <pre><span class="kw">int</span> maxSubArray(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {
+    <span class="kw">int</span> currSum = nums[<span class="num">0</span>];
+    <span class="kw">int</span> maxSum  = nums[<span class="num">0</span>];
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; nums.size(); i++) {
+        currSum = max(nums[i], currSum + nums[i]);  <span class="comment">// extend or restart</span>
+        maxSum  = max(maxSum, currSum);              <span class="comment">// update best-ever</span>
+    }
+    <span class="kw">return</span> maxSum;
+}</pre>
+    <div class="card">
+      <strong>If you also need to print the subarray</strong> (not just the sum), track <code>start</code>, <code>end</code>, and <code>tempStart</code> alongside:
+      <pre style="margin-top:10px;"><span class="kw">int</span> currSum = nums[<span class="num">0</span>], maxSum = nums[<span class="num">0</span>];
+<span class="kw">int</span> start = <span class="num">0</span>, end = <span class="num">0</span>, tempStart = <span class="num">0</span>;
+
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; nums.size(); i++) {
+    <span class="kw">if</span> (nums[i] &gt; currSum + nums[i]) {
+        currSum = nums[i];
+        tempStart = i;             <span class="comment">// new window starts here</span>
+    } <span class="kw">else</span> {
+        currSum += nums[i];
+    }
+    <span class="kw">if</span> (currSum &gt; maxSum) {
+        maxSum = currSum;
+        start = tempStart;
+        end = i;
+    }
+}
+<span class="comment">// answer subarray = nums[start..end]</span></pre>
+    </div>
+  </section>
+
+  <!-- RECOGNITION -->
+  <section>
+    <h2>How To Recognize a Kadane's Question</h2>
+    <p>In an exam or interview, the question won't say "use Kadane's algorithm." You have to spot it. Look for these signals:</p>
+    <ul class="recog">
+      <li>The word <strong>"subarray"</strong> (contiguous), not "subsequence" — and you're asked to maximize/minimize a <strong>sum</strong>.</li>
+      <li>The array has a <strong>mix of positive and negative numbers</strong> — that's exactly when greedy "extend or restart" logic matters.</li>
+      <li>Phrasing like <em>"continuous days,"</em> <em>"best streak,"</em> <em>"longest profitable run"</em> — real-world dressing of the same idea.</li>
+      <li>If it says <strong>"circular array"</strong> — still Kadane, but with one extra trick (see variations below).</li>
+      <li>If it says <strong>"product"</strong> instead of "sum" — still Kadane-family, but you track two running values instead of one.</li>
+    </ul>
+    <div class="mistake" style="border-left-color:var(--amber); margin-top:14px;">
+      <b>Trap to avoid:</b> If elements can be picked <strong>non-contiguously</strong> (i.e. it says "subsequence," or you're allowed to skip elements, like House Robber), that is <strong>NOT</strong> Kadane's — that's a different DP pattern entirely.
+    </div>
+  </section>
+
+  <!-- VARIATIONS -->
+  <section>
+    <h2>Question Variations You'll See</h2>
+
+    <div class="vcard">
+      <div class="vh"><h3>1. Classic Maximum Subarray</h3><span class="src">LeetCode 53</span></div>
+      <div class="twist">Direct application — no twist.</div>
+      <p style="margin:0;">Exactly what's explained above. Just run plain Kadane's.</p>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>2. All Elements Negative</h3><span class="src">Common edge case</span></div>
+      <div class="twist">Watch your initialization!</div>
+      <p style="margin:0;">If <code>nums = [-3, -8, -1, -5]</code>, the answer must still be <code>-1</code> (you must pick at least one element). The classic mistake is initializing <code>maxSum = 0</code> — that silently gives the wrong answer. Always initialize <code>currSum</code> and <code>maxSum</code> with <code>nums[0]</code>, not <code>0</code>.</p>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>3. Maximum Sum Circular Subarray</h3><span class="src">LeetCode 918</span></div>
+      <div class="twist">Array wraps around (last element connects back to first).</div>
+      <p style="margin:0;">Two cases: either the best subarray is normal (no wraparound) — plain Kadane handles it. Or it wraps around the end — in that case, the best wraparound sum = <code>totalSum − minSubarraySum</code>, where <code>minSubarraySum</code> is found by running an "inverted" Kadane's (tracking minimum instead of maximum). Final answer = <code>max(normalKadane, totalSum − minKadane)</code>. Special case: if all numbers are negative, the wraparound trick gives <code>0</code> (an empty array), which is invalid — so just return the normal Kadane's result in that case.</p>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>4. Maximum Product Subarray</h3><span class="src">LeetCode 152</span></div>
+      <div class="twist">Sum → Product. Negatives flip the logic.</div>
+      <p style="margin:0;">With multiplication, a negative number can turn the smallest (most negative) product into the largest one. So you must track <strong>both</strong> a running max and a running min at every step, and swap them when you hit a negative number:</p>
+      <pre style="margin-top:10px;"><span class="kw">if</span> (nums[i] &lt; <span class="num">0</span>) swap(maxProd, minProd);
+maxProd = max(nums[i], maxProd * nums[i]);
+minProd = min(nums[i], minProd * nums[i]);
+result = max(result, maxProd);</pre>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>5. Maximum Sum Rectangle in a 2D Matrix</h3><span class="src">GFG / LeetCode 363</span></div>
+      <div class="twist">Kadane's extended to 2 dimensions.</div>
+      <p style="margin:0;">Fix a pair of left and right columns, compress every row between them into a single 1D array (row sums), then run plain Kadane's on that 1D array to get the best "height" for that column pair. Repeat for all column pairs and keep the best result. Time: <code>O(cols² × rows)</code>.</p>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>6. Maximum Subarray Sum With At Most One Deletion</h3><span class="src">LeetCode 1186</span></div>
+      <div class="twist">You're allowed to delete exactly one element to improve the sum.</div>
+      <p style="margin:0;">Track two running states instead of one: <code>noDelete[i]</code> = best sum ending at <code>i</code> with no deletion used (plain Kadane), and <code>oneDelete[i]</code> = best sum ending at <code>i</code> with exactly one deletion used so far (either delete nums[i] and carry forward <code>noDelete[i-1]</code>, or don't delete and carry forward <code>oneDelete[i-1] + nums[i]</code>).</p>
+    </div>
+
+    <div class="vcard">
+      <div class="vh"><h3>7. Print the Actual Subarray</h3><span class="src">Follow-up question</span></div>
+      <div class="twist">Not just the sum — the actual elements.</div>
+      <p style="margin:0;">Shown in the code section above — track <code>start</code>, <code>end</code>, and <code>tempStart</code> indices alongside <code>currSum</code>/<code>maxSum</code>.</p>
+    </div>
+  </section>
+
+  <!-- MISTAKES -->
+  <section>
+    <h2>Common Mistakes</h2>
+    <div class="mistake"><b>Wrong init:</b> Setting <code>maxSum = 0</code> instead of <code>nums[0]</code> — breaks on all-negative arrays.</div>
+    <div class="mistake"><b>Subarray vs subsequence:</b> Applying Kadane's when the problem actually allows skipping elements (non-contiguous) — that needs a different DP, not Kadane's.</div>
+    <div class="mistake"><b>Forgetting indices:</b> If asked to print the subarray, forgetting to update <code>start</code>/<code>end</code> only when <code>maxSum</code> actually improves (not every iteration).</div>
+    <div class="mistake"><b>Circular trap:</b> Forgetting the "all negative" special case in the circular subarray variation — the wraparound formula breaks silently.</div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section>
+    <h2>Practice List</h2>
+    <ul class="plain">
+      <li>LeetCode 53 — Maximum Subarray</li>
+      <li>LeetCode 918 — Maximum Sum Circular Subarray</li>
+      <li>LeetCode 152 — Maximum Product Subarray</li>
+      <li>LeetCode 1186 — Maximum Subarray Sum with One Deletion</li>
+      <li>GFG — Maximum Sum Rectangle in a 2D Matrix</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>kadanes-algorithm-notes.html</footer>
+
+<script>
+  const nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+  let i, currSum, maxSum, start, end, tempStart;
+
+  const arrayRow = document.getElementById('arrayRow');
+  const currSumVal = document.getElementById('currSumVal');
+  const maxSumVal = document.getElementById('maxSumVal');
+  const logText = document.getElementById('logText');
+  const nextBtn = document.getElementById('nextBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function init(){
+    i = -1; currSum = null; maxSum = null; start = 0; end = -1; tempStart = 0;
+    logText.textContent = 'Click "Next Step" to begin.';
+    currSumVal.textContent = '–';
+    maxSumVal.textContent = '–';
+    nextBtn.disabled = false;
+    render();
+  }
+
+  function render(){
+    arrayRow.innerHTML = '';
+    nums.forEach((n, idx) => {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.textContent = n;
+      if (idx > i) box.classList.add('future');
+      if (idx >= start && idx <= end) box.classList.add('best-window');
+      if (i >= 0 && idx >= tempStart && idx <= i) box.classList.add('in-window');
+      arrayRow.appendChild(box);
+    });
+  }
+
+  function nextStep(){
+    i++;
+    if (i >= nums.length) { nextBtn.disabled = true; logText.textContent = 'Done! Final maxSum = ' + maxSum + '.'; return; }
+
+    if (i === 0) {
+      currSum = nums[0]; maxSum = nums[0]; tempStart = 0; start = 0; end = 0;
+      logText.textContent = `Start at i=0. currSum = maxSum = nums[0] = ${nums[0]}.`;
+    } else {
+      const extend = currSum + nums[i];
+      const restart = nums[i];
+      if (restart > extend) {
+        currSum = restart; tempStart = i;
+        logText.textContent = `i=${i}: nums[${i}]=${nums[i]} alone beats continuing (${extend}). Restart window here. currSum = ${currSum}.`;
+      } else {
+        currSum = extend;
+        logText.textContent = `i=${i}: extend streak. currSum = ${currSum}.`;
+      }
+      if (currSum > maxSum) {
+        maxSum = currSum; start = tempStart; end = i;
+        logText.textContent += ` New best! maxSum = ${maxSum}.`;
+      }
+    }
+    currSumVal.textContent = currSum;
+    maxSumVal.textContent = maxSum;
+    render();
+  }
+
+  nextBtn.addEventListener('click', nextStep);
+  resetBtn.addEventListener('click', init);
+  init();
+</script>
+
+</body>
+</html>
