@@ -6,5 +6,5 @@ int main() {
     cin >> a >> b;
     cout << "Sum = " << a + b << endl;
 
-    return 0;
+    return 0;  
 }
