@@ -1,1 +1,1 @@
-Max Sum : 6
+Min Sum : 1
