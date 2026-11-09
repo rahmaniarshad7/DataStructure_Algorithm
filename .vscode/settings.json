@@ -8,5 +8,6 @@
       ],
       "debugConfig": "Test Config"
     }
-  ]
+  ],
+  "C_Cpp.errorSquiggles": "disabled"
 }
