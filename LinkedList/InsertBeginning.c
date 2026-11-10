@@ -6,6 +6,7 @@ struct Node
     int data;
     struct Node *next;
 };
+struct Node *head;
 
 void printList(struct Node *head)
 {
@@ -20,7 +21,7 @@ void printList(struct Node *head)
 
 int main()
 {
-    struct Node *first, *second, *third, *head;
+    struct Node *first, *second, *third;
     first = malloc(sizeof(struct Node));
     second = malloc(sizeof(struct Node));
     third = malloc(sizeof(struct Node));
