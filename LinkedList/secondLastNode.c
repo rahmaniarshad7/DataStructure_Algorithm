@@ -33,20 +33,6 @@ void printSecondLastNode(struct Node *head1)
     }
     printf("Second Last Node : %d", temp->data);
 }
-void searchElement(struct Node *head, int key)
-{
-    struct Node *temp = head;
-    while (temp != NULL)
-    {
-        if (temp->data == key)
-        {
-            printf("Key Found : ");
-            return;
-        }
-        temp = temp->next;
-    }
-    printf("Key not found : ");
-}
 
 void printList(struct Node *head)
 {
@@ -86,11 +72,8 @@ int main()
         }
     }
 
-    int key;
-    printf("Enter Key : ");
-    scanf("%d", &key);
-
-    searchElement(head, key);
+    printList(head);
+    printSecondLastNode(head);
 
     // Free memory
     while (head != NULL)
