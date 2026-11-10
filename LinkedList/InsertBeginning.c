@@ -8,6 +8,23 @@ struct Node
 };
 struct Node *head;
 
+void insert_at_beg(int value)
+{
+    struct Node *ptr;
+    ptr = malloc(sizeof(struct Node));
+    if (ptr != NULL)
+    {
+        ptr->data = value;
+        ptr->next = head;
+        head = ptr;
+    }
+    else
+    {
+        printf("Memory not allocated : ");
+        return;
+    }
+}
+
 void printList(struct Node *head)
 {
     struct Node *temp = head;
@@ -38,10 +55,11 @@ int main()
     printf("\n Before Insertion of 5 : ");
     printList(head);
 
-    struct Node *ptr = malloc(sizeof(struct Node));
-    ptr->data = 5;
-    ptr->next = first;
-    head = ptr;
+    int value;
+    printf("\n Enter value to Insert : ");
+    scanf("%d", &value);
+
+    insert_at_beg(value);
 
     printf("\n After Insertion of 5 : ");
     printList(head);
