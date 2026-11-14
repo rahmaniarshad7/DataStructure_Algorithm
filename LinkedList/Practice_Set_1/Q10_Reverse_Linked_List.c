@@ -47,7 +47,7 @@ struct Node *reverseList(struct Node *head)
         prev = current;       // Move prev forward
         current = next;       // Move current forward
     }
-    return prev;
+    return prev; // new head
 }
 
 int main()
